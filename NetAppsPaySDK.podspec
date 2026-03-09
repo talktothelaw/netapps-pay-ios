@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "NetAppsPaySDK"
-  s.version      = "1.0.4"
+  s.version      = "1.0.5"
   s.summary      = "NetAppsPay iOS Payment SDK"
   s.description  = "Accept payments via Card, Bank Transfer, USSD, PayAttitude, and MoniFlow in your iOS app."
   s.homepage     = "https://gitlab.com/netapps-sdk/netappspay-sdk-ios"
