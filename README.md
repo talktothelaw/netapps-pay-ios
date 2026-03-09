@@ -98,13 +98,13 @@ config.logoURL = "https://example.com/logo.png" // Merchant logo
 config.chargeAllocation = .customer             // .customer (default) or .merchant
 config.enableSaveCard = true                    // Allow saving cards for returning customers
 config.showTransactionSummary = true            // Show order summary (default: true)
-config.isTest = false                           // Test mode
 config.customerId = "cust_001"                  // Your internal customer ID
 config.productName = "Premium Plan"             // Product name
 config.cardHolderName = "John Doe"              // Pre-filled cardholder name
 config.postalCode = "100248"                    // Postal code (default: "100248")
 config.locality = "NG"                          // Country code (default: "NG")
 config.administrativeArea = "Lagos"             // State (default: "Lagos")
+config.debugMode = false                         // Enable debug logging
 ```
 
 ## Payment Channels
