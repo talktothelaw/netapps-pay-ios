@@ -86,6 +86,9 @@ final class PaymentStore {
     
     private(set) var lastTransactionStatus: TransactionStatus?
     
+    /// Amount from polling response (amountToDebit includes fees)
+    private(set) var polledAmountToDebit: Double?
+    
     // MARK: - Computed Properties
     
     /// Whether the transaction is in live mode (vs test mode)
@@ -94,8 +97,12 @@ final class PaymentStore {
     }
     
     /// The display amount from the API response (major units: naira/dollars),
-    /// falling back to converting config amount from minor units.
+    /// preferring amountToDebit (includes fees) from the polling response,
+    /// falling back to initiate response amount, then converting config amount from minor units.
     var responseAmount: Double {
+        if let amountToDebit = polledAmountToDebit {
+            return amountToDebit
+        }
         if let amount = apiTransaction?.amount {
             return amount
         }
@@ -168,6 +175,7 @@ final class PaymentStore {
         if let ref = response.merchantRef { merchantRef = ref }
         if let txRef = response.systemTxRef { systemTxRef = txRef }
         lastTransactionStatus = response.status
+        if let amountToDebit = response.amountToDebit { polledAmountToDebit = amountToDebit }
     }
     
     // MARK: - Card Data
