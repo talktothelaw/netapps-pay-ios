@@ -96,11 +96,14 @@ final class PaymentAPIClient {
             
             // Network error
             if let error = error {
+                if PaymentSDK.debugMode {
+                    print("[NetAppsPaySDK] Network error: \(error.localizedDescription)")
+                }
                 let nsError = error as NSError
                 if nsError.code == NSURLErrorTimedOut {
                     completion(.failure(.timeoutError()))
                 } else {
-                    completion(.failure(.networkError(error.localizedDescription)))
+                    completion(.failure(.networkError()))
                 }
                 return
             }
@@ -131,31 +134,31 @@ final class PaymentAPIClient {
                 let decoded = try self.decoder.decode(T.self, from: data)
                 completion(.success(decoded))
             } catch let decodingError as DecodingError {
-                let detail: String
-                switch decodingError {
-                case .keyNotFound(let key, let ctx):
-                    detail = "Missing key '\(key.stringValue)' at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
-                case .valueNotFound(let type, let ctx):
-                    detail = "Null value for type \(type) at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
-                case .typeMismatch(let type, let ctx):
-                    detail = "Type mismatch: expected \(type) at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
-                case .dataCorrupted(let ctx):
-                    detail = "Data corrupted at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
-                @unknown default:
-                    detail = decodingError.localizedDescription
-                }
                 if PaymentSDK.debugMode {
+                    let detail: String
+                    switch decodingError {
+                    case .keyNotFound(let key, let ctx):
+                        detail = "Missing key '\(key.stringValue)' at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+                    case .valueNotFound(let type, let ctx):
+                        detail = "Null value for type \(type) at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+                    case .typeMismatch(let type, let ctx):
+                        detail = "Type mismatch: expected \(type) at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+                    case .dataCorrupted(let ctx):
+                        detail = "Data corrupted at path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+                    @unknown default:
+                        detail = decodingError.localizedDescription
+                    }
                     print("[NetAppsPaySDK] Decoding error: \(detail)")
                     if let bodyStr = String(data: data, encoding: .utf8) {
                         print("[NetAppsPaySDK] Raw response: \(bodyStr)")
                     }
                 }
-                completion(.failure(.decodingError("Failed to parse response: \(detail)")))
+                completion(.failure(.decodingError()))
             } catch {
                 if PaymentSDK.debugMode {
                     print("[NetAppsPaySDK] Unexpected decoding error: \(error)")
                 }
-                completion(.failure(.decodingError("Failed to parse response: \(error.localizedDescription)")))
+                completion(.failure(.decodingError()))
             }
         }.resume()
     }
@@ -205,11 +208,14 @@ final class PaymentAPIClient {
             guard let self = self else { return }
             
             if let error = error {
+                if PaymentSDK.debugMode {
+                    print("[NetAppsPaySDK] Network error: \(error.localizedDescription)")
+                }
                 let nsError = error as NSError
                 if nsError.code == NSURLErrorTimedOut {
                     completion(.failure(.timeoutError()))
                 } else {
-                    completion(.failure(.networkError(error.localizedDescription)))
+                    completion(.failure(.networkError()))
                 }
                 return
             }
@@ -288,11 +294,9 @@ final class PaymentAPIClient {
                 }
             }
             
-            // All failed — show the raw response in the error so we can diagnose
-            let truncated = String(rawString.prefix(500))
-            let errorMsg = "Could not decode response. Raw: \(truncated)"
+            // All candidates failed
             if PaymentSDK.debugMode {
-                // Log each candidate's decode error
+                print("[NetAppsPaySDK] Could not decode response. Raw: \(String(rawString.prefix(500)))")
                 for candidate in candidates {
                     do {
                         let _ = try self.decoder.decode(T.self, from: candidate.data)
@@ -301,7 +305,7 @@ final class PaymentAPIClient {
                     }
                 }
             }
-            completion(.failure(.decodingError(errorMsg)))
+            completion(.failure(.decodingError()))
         }.resume()
     }
     
