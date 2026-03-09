@@ -4,6 +4,25 @@
 
 import Foundation
 
+/// Strips URLs, file paths, and technical details from error messages
+/// so they are safe to display to end users.
+private func sanitizeErrorMessage(_ message: String) -> String {
+    var sanitized = message
+        .replacingOccurrences(of: "https?://[^\\s)\"',]+", with: "", options: .regularExpression)
+        .replacingOccurrences(of: "/[a-zA-Z0-9_.\\-/]+", with: "", options: .regularExpression)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    if sanitized.localizedCaseInsensitiveContains("timed out") || sanitized.localizedCaseInsensitiveContains("timeout") {
+        return "Request timed out. Please try again."
+    }
+    if sanitized.isEmpty || sanitized.count < 5 {
+        return "Something went wrong. Please try again."
+    }
+    // Remove trailing colons and collapse extra whitespace
+    while sanitized.hasSuffix(":") { sanitized = String(sanitized.dropLast()).trimmingCharacters(in: .whitespaces) }
+    sanitized = sanitized.replacingOccurrences(of: "\\s{2,}", with: " ", options: .regularExpression)
+    return sanitized
+}
+
 /// Error type for all payment API operations.
 public class PaymentAPIError: Error, LocalizedError {
     public let message: String
@@ -21,7 +40,7 @@ public class PaymentAPIError: Error, LocalizedError {
         errorCode: String? = nil,
         details: Any? = nil
     ) {
-        self.message = message
+        self.message = sanitizeErrorMessage(message)
         self.statusCode = statusCode
         self.errorCode = errorCode
         self.details = details
