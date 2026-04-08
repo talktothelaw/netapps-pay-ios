@@ -563,6 +563,8 @@ public struct TestCard: Decodable {
     public let expirationYear: Int
     public let flowType: String
     public let description: String
+    public let cvv: String?
+    public let cardHolderName: String?
 }
 
 struct TestCardsResponseWrapper: Decodable {

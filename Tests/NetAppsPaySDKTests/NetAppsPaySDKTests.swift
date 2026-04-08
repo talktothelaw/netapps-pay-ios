@@ -106,7 +106,7 @@ final class NetAppsPaySDKTests: XCTestCase {
     
     func testPaymentChannelRawValues() {
         XCTAssertEqual(PaymentChannel.card.rawValue, "card")
-        XCTAssertEqual(PaymentChannel.moniflow.rawValue, "netapps_marketplace")
+        XCTAssertEqual(PaymentChannel.moniflow.rawValue, "moni_flow")
     }
     
     func testPaymentChannelFromAPICode() {
@@ -114,6 +114,7 @@ final class NetAppsPaySDKTests: XCTestCase {
         XCTAssertEqual(PaymentChannel.fromAPICode("bank_transfer"), .transfer)
         XCTAssertEqual(PaymentChannel.fromAPICode("ussd_code"), .ussd)
         XCTAssertEqual(PaymentChannel.fromAPICode("ussd_push"), .payattitude)
+        XCTAssertEqual(PaymentChannel.fromAPICode("MONI_FLOW"), .moniflow)
         XCTAssertEqual(PaymentChannel.fromAPICode("NETAPPS_MARKETPLACE"), .moniflow)
         XCTAssertNil(PaymentChannel.fromAPICode("unknown_channel"))
     }

@@ -16,7 +16,7 @@ public enum PaymentChannel: String, Codable, CaseIterable {
     case ussd
     case transfer
     case payattitude
-    case moniflow = "netapps_marketplace"
+    case moniflow = "moni_flow"
     
     /// Fallback display name (used only when API channel names are unavailable).
     public var displayName: String {
@@ -47,7 +47,7 @@ public enum PaymentChannel: String, Codable, CaseIterable {
         case "bank_transfer", "transfer": return .transfer
         case "ussd_code", "ussd": return .ussd
         case "ussd_push", "payattitude", "pay_attitude": return .payattitude
-        case "netapps_marketplace", "marketplace", "moniflow": return .moniflow
+        case "moni_flow", "netapps_marketplace", "marketplace", "moniflow": return .moniflow
         default: return nil
         }
     }

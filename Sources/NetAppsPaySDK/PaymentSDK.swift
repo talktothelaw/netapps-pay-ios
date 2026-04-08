@@ -33,7 +33,7 @@ public extension PaymentSDKDelegate {
 ///     amount: 150000,    // ₦1,500.00
 ///     currency: .NGN,
 ///     email: "user@example.com",
-///     fullName: "John Doe",
+///     fullName: "Jane Smith",
 ///     address1: "123 Main St",
 ///     address2: "",
 ///     phoneNumber: "08012345678",
@@ -70,6 +70,17 @@ public final class PaymentSDK {
         config: PaymentConfig,
         delegate: PaymentSDKDelegate? = nil
     ) {
+        // Validate fullName
+        guard !config.fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            delegate?.paymentDidFail(with: PaymentFailedPayload(
+                amount: Double(config.amount),
+                currency: config.currency,
+                message: "Invalid config: 'fullName' is required. Please supply the customer's full name (e.g. first and last name) in PaymentConfig.fullName before calling present(from:config:delegate:).",
+                errorCode: "INVALID_CONFIG"
+            ))
+            return
+        }
+        
         // Initialize API client
         PaymentAPIClient.shared.initialize(publicKey: config.publicKey)
         

@@ -291,7 +291,7 @@ final class PaymentStore {
             .transfer: ["bank_transfer", "transfer"],
             .ussd: ["ussd_code", "ussd"],
             .payattitude: ["ussd_push", "payattitude", "pay_attitude"],
-            .moniflow: ["netapps_marketplace", "marketplace"],
+            .moniflow: ["moni_flow", "netapps_marketplace", "marketplace"],
         ]
         if let apiCodes = channelToApiCodes[channel] {
             if let match = apiChannels.first(where: { apiCodes.contains(($0.code ?? "").lowercased()) }) {

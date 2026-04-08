@@ -15,7 +15,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "NetAppsPaySDK"
+            name: "NetAppsPaySDK",
+            resources: [
+                .copy("Resources/moniflow_logo.png")
+            ]
         ),
         .testTarget(
             name: "NetAppsPaySDKTests",

@@ -492,11 +492,11 @@ final class CardPaymentViewController: UIViewController {
         
         let request = ProcessCardRequest(
             cardData: CardDataPayload(
-                cardHolderName: "Test User",
+                cardHolderName: card.cardHolderName ?? "Test User",
                 cardNumber: card.cardNumber.replacingOccurrences(of: " ", with: ""),
                 expirationMonth: monthEnum.rawValue,
                 expirationYear: card.expirationYear,
-                cvv: "123"
+                cvv: card.cvv ?? "123"
             ),
             amountData: AmountDataPayload(
                 authorizedAmount: store.requestAmount,
@@ -1020,6 +1020,14 @@ final class CardPaymentViewController: UIViewController {
     private func validateCard() -> Bool {
         var valid = true
         
+        let holderName = (cardHolderField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if holderName.isEmpty {
+            cardHolderField.setError("Cardholder name is required")
+            valid = false
+        } else {
+            cardHolderField.setError(nil)
+        }
+        
         let cardNumber = (cardNumberField.text ?? "").replacingOccurrences(of: " ", with: "")
         let brand = CardBrandDetector.detect(from: cardNumber)
         
@@ -1083,9 +1091,10 @@ final class CardPaymentViewController: UIViewController {
         let expiryMonth = Int(expiry.prefix(2)) ?? 1
         let expiryYear = Int("20\(expiry.suffix(2))") ?? 2025
         let cvv = cvvField.text ?? ""
-        let holderName = cardHolderField.text ?? store.config?.fullName ?? ""
+        let holderName = (cardHolderField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard let monthEnum = ExpirationMonth.from(month: expiryMonth),
+        guard !holderName.isEmpty,
+              let monthEnum = ExpirationMonth.from(month: expiryMonth),
               let transactionId = store.transactionId,
               let config = store.config else {
             return
