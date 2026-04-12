@@ -12,5 +12,6 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://gitlab.com/netapps-sdk/netappspay-sdk-ios.git", :tag => s.version.to_s }
 
   s.source_files = "Sources/NetAppsPaySDK/**/*.swift"
+  s.resources    = "Sources/NetAppsPaySDK/Resources/**/*"
   s.frameworks   = "UIKit", "Foundation"
 end

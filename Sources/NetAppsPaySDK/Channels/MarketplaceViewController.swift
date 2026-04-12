@@ -41,7 +41,12 @@ final class MarketplaceViewController: UIViewController {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
         iv.translatesAutoresizingMaskIntoConstraints = false
-        if let url = Bundle.module.url(forResource: "moniflow_logo", withExtension: "png"),
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: MarketplaceViewController.self)
+        #endif
+        if let url = bundle.url(forResource: "moniflow_logo", withExtension: "png"),
            let data = try? Data(contentsOf: url) {
             iv.image = UIImage(data: data)
         }
