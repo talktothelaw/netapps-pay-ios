@@ -136,6 +136,7 @@ struct InitiateTransactionResponse: Decodable {
     let systemTxRef: String?
     let merchantRef: String?
     let status: TransactionStatus?
+    let businessName: String?
     let amount: Double
     let currency: String?
     let message: String?
@@ -148,11 +149,11 @@ struct InitiateTransactionResponse: Decodable {
     let live: Bool?
     
     private enum CodingKeys: String, CodingKey {
-        case systemTxRef, merchantRef, status, amount, currency, message
+        case systemTxRef, merchantRef, status, businessName, amount, currency, message
         case transactionId, processRef, redirectUrl, initInstruction
         case channelSpecificData, channels, live
         // snake_case alternatives
-        case system_tx_ref, merchant_ref, transaction_id
+        case system_tx_ref, merchant_ref, transaction_id, business_name
         case process_ref, redirect_url, init_instruction
         case channel_specific_data
     }
@@ -165,6 +166,8 @@ struct InitiateTransactionResponse: Decodable {
         merchantRef = (try? container.decodeIfPresent(String.self, forKey: .merchantRef))
             ?? (try? container.decodeIfPresent(String.self, forKey: .merchant_ref))
         status = try? container.decodeIfPresent(TransactionStatus.self, forKey: .status)
+        businessName = (try? container.decodeIfPresent(String.self, forKey: .businessName))
+            ?? (try? container.decodeIfPresent(String.self, forKey: .business_name))
         currency = try? container.decodeIfPresent(String.self, forKey: .currency)
         message = try? container.decodeIfPresent(String.self, forKey: .message)
         transactionId = (try? container.decodeIfPresent(String.self, forKey: .transactionId))

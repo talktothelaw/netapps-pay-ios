@@ -421,7 +421,7 @@ public final class PaymentViewController: UIViewController {
                     // Update summary with API response data
                     let isTest = response.live == false
                     self.summaryView.configure(
-                        businessName: self.config.businessName ?? self.config.narration ?? "Payment",
+                        businessName: response.businessName ?? self.config.businessName ?? self.config.narration ?? "Payment",
                         narration: self.config.narration,
                         productName: self.config.fullName,
                         amount: AmountFormatter.format(amount: response.amount, currency: self.config.currency),
