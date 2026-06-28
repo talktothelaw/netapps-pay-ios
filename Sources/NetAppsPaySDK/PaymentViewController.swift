@@ -454,10 +454,20 @@ public final class PaymentViewController: UIViewController {
     
     private func setupChannelTabs() {
         let channels = store.getAvailableChannels()
+
+        // No active payment channels → show a clear unavailable state, never a
+        // blank screen.
+        guard !channels.isEmpty else {
+            showError(PaymentAPIError.channelsUnavailable())
+            return
+        }
+
         channelTabsView.configure(channels: channels, selected: store.selectedChannel, store: store)
-        
-        // Always show the channel VC — either the pre-selected default or the first available
-        let initialChannel = store.selectedChannel ?? channels.first
+
+        // store.selectedChannel was already resolved against the active channels
+        // in initializeWithAPIResponse; fall back to the first active channel only
+        // as a defensive measure (and never select a channel that isn't active).
+        let initialChannel = store.selectedChannel.flatMap { channels.contains($0) ? $0 : nil } ?? channels.first
         if let channel = initialChannel {
             selectPaymentChannel(channel)
         }

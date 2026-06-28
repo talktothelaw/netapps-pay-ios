@@ -86,6 +86,12 @@ public class PaymentAPIError: Error, LocalizedError {
     ) -> PaymentAPIError {
         PaymentAPIError(message: message, statusCode: 0, errorCode: "DECODING_ERROR")
     }
+
+    public static func channelsUnavailable(
+        _ message: String = "No payment methods are currently available for this transaction. Please try again later or contact support."
+    ) -> PaymentAPIError {
+        PaymentAPIError(message: message, statusCode: 0, errorCode: "NO_CHANNELS")
+    }
 }
 
 // MARK: - Error Messages

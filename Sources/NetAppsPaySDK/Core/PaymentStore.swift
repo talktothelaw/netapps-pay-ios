@@ -134,9 +134,20 @@ final class PaymentStore {
         self.merchantRef = response.merchantRef ?? ""
         self.status = .idle
         self.currentStep = .channelSelection
-        
-        // Auto-select default channel
-        selectChannel(config.defaultChannel)
+
+        // Resolve the pre-selected channel against the backend's ACTIVE channels:
+        // the configured default if it is active, otherwise the first active
+        // channel. nil → no active channels, so we leave nothing selected and let
+        // the UI show an unavailable state. We must NOT blindly select
+        // config.defaultChannel: selecting an inactive channel is what rendered a
+        // blank screen.
+        let available = getAvailableChannels()
+        if let resolved = PaymentChannel.resolveDefault(available: available, preferred: config.defaultChannel) {
+            selectChannel(resolved)
+        } else {
+            selectedChannel = nil
+            delegate?.storeDidUpdateState(self)
+        }
     }
     
     // MARK: - Channel Selection
@@ -261,27 +272,14 @@ final class PaymentStore {
     // MARK: - Available Channels
     
     func getAvailableChannels() -> [PaymentChannel] {
-        // If we have API channels, filter by active status
-        if !apiChannels.isEmpty {
-            let activeChannels = apiChannels
-                .filter { $0.isActive == true }
-                .compactMap { PaymentChannel.fromAPICode($0.code ?? "") }
-            
-            if !activeChannels.isEmpty {
-                // Further filter by merchant config if provided
-                if let configChannels = config?.paymentChannels, !configChannels.isEmpty {
-                    let filtered = configChannels.filter { activeChannels.contains($0) }
-                    if !filtered.isEmpty { return filtered }
-                }
-                return activeChannels
-            }
-        }
-        
-        // Fall back to merchant config or all channels
-        if let channels = config?.paymentChannels, !channels.isEmpty {
-            return channels
-        }
-        return PaymentChannel.allCases
+        // Delegates to the shared, unit-tested selection logic. Once the backend
+        // has returned a channel list, ONLY its active channels are eligible (an
+        // all-inactive response yields [] → "no channels available"), rather than
+        // silently falling back to every channel.
+        return PaymentChannel.availableChannels(
+            apiChannels: apiChannels,
+            configChannels: config?.paymentChannels
+        )
     }
     
     /// Returns the API display name for a channel, falling back to the enum's displayName.
