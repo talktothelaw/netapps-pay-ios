@@ -31,7 +31,7 @@ final class ChannelSelectionTests: XCTestCase {
 
     private func makeConfig(
         paymentChannels: [PaymentChannel] = [.card, .transfer, .ussd, .payattitude, .moniflow],
-        defaultChannel: PaymentChannel = .card
+        defaultChannel: PaymentChannel? = nil
     ) -> PaymentConfig {
         PaymentConfig(
             publicKey: "pk_test_123",
@@ -82,6 +82,30 @@ final class ChannelSelectionTests: XCTestCase {
     func testAvailableChannelsDeduplicates() {
         let api = [ch("transfer", true), ch("bank_transfer", true)] // both → .transfer
         XCTAssertEqual(PaymentChannel.availableChannels(apiChannels: api, configChannels: nil), [.transfer])
+    }
+
+    func testAvailableChannelsCollapsesEveryMarketplaceAliasOntoOneTab() {
+        let api = [
+            ch("moni_flow", true), ch("moniflow", true),
+            ch("marketplace", true), ch("netapps_marketplace", true),
+            ch("MONI_FLOW", true), ch("Marketplace", true)
+        ]
+        XCTAssertEqual(PaymentChannel.availableChannels(apiChannels: api, configChannels: nil), [.moniflow])
+    }
+
+    func testAvailableChannelsDedupesRepeatedMerchantConfigChannels() {
+        let api = [ch("moni_flow", true), ch("card", true)]
+        let config: [PaymentChannel] = [.moniflow, .moniflow, .moniflow]
+        XCTAssertEqual(PaymentChannel.availableChannels(apiChannels: api, configChannels: config), [.moniflow])
+        XCTAssertEqual(PaymentChannel.availableChannels(apiChannels: [], configChannels: config), [.moniflow])
+    }
+
+    func testAvailableChannelsPreservesMerchantOrderAndNeverHoistsCard() {
+        let api = [ch("moni_flow", true), ch("ussd_code", true), ch("card", true)]
+        XCTAssertEqual(
+            PaymentChannel.availableChannels(apiChannels: api, configChannels: nil),
+            [.moniflow, .ussd, .card]
+        )
     }
 
     func testAvailableChannelsFallsBackToConfigWhenNoBackend() {
@@ -173,5 +197,29 @@ final class ChannelSelectionTests: XCTestCase {
 
         XCTAssertEqual(store.selectedChannel, .ussd)
         XCTAssertEqual(store.currentStep, .paymentDetails)
+    }
+
+    func testStoreSelectsFirstMerchantChannelWhenNoDefaultConfigured() {
+        let store = PaymentStore()
+        let config = makeConfig(paymentChannels: [], defaultChannel: nil)
+        let response = makeResponse(channels: [("moni_flow", true), ("card", true), ("bank_transfer", true)])
+
+        store.initializeWithAPIResponse(config: config, response: response)
+
+        XCTAssertEqual(store.selectedChannel, .moniflow, "First channel in the merchant's own order wins, not card")
+    }
+
+    func testStoreReproducesDuplicateMoniFlowScreenshotAsOneSelectedTab() {
+        let store = PaymentStore()
+        let config = makeConfig(paymentChannels: [], defaultChannel: nil)
+        let response = makeResponse(channels: [
+            ("moni_flow", true), ("moniflow", true), ("marketplace", true),
+            ("netapps_marketplace", true), ("MONI_FLOW", true), ("card", false)
+        ])
+
+        store.initializeWithAPIResponse(config: config, response: response)
+
+        XCTAssertEqual(store.getAvailableChannels(), [.moniflow], "One tab, not six")
+        XCTAssertEqual(store.selectedChannel, .moniflow)
     }
 }

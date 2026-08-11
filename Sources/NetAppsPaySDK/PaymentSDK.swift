@@ -53,7 +53,7 @@ public final class PaymentSDK {
     public static var debugMode: Bool = true
     
     /// SDK version.
-    public static let version = "1.0.7"
+    public static let version = "1.1.0"
     
     private init() {}
 

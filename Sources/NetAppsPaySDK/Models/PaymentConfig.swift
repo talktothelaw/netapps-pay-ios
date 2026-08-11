@@ -113,7 +113,9 @@ public struct PaymentConfig {
     public let phoneNumber: String
     public let narration: String
     public let paymentChannels: [PaymentChannel]
-    public let defaultChannel: PaymentChannel
+    /// Optional pre-selected channel. When nil (the default), the first channel
+    /// the merchant offers — in their own order — is pre-selected.
+    public let defaultChannel: PaymentChannel?
     public let metadata: [String: Any]
     public let city: String
     
@@ -154,7 +156,7 @@ public struct PaymentConfig {
         phoneNumber: String,
         narration: String,
         paymentChannels: [PaymentChannel],
-        defaultChannel: PaymentChannel,
+        defaultChannel: PaymentChannel? = nil,
         metadata: [String: Any],
         city: String
     ) {

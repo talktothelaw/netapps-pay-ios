@@ -30,7 +30,11 @@ extension PaymentChannel {
     ///   2. If the backend has not returned channels yet, fall back to the merchant's
     ///      configured channels, then to every channel.
     ///
-    /// Channels are returned in backend/merchant order (NOT card-first).
+    /// Channels are returned de-duplicated and in backend/merchant order (NOT
+    /// card-first). De-duplication applies to every branch: several backend rows
+    /// can map to the same channel (e.g. `moni_flow` + `marketplace`), and a
+    /// merchant may repeat a channel in `configChannels` — either one would
+    /// otherwise render the same tab N times.
     static func availableChannels(
         apiChannels: [APIPaymentChannel],
         configChannels: [PaymentChannel]?
@@ -48,16 +52,21 @@ extension PaymentChannel {
 
             // Backend has spoken: respect it fully, even when the result is empty.
             if let configChannels = configChannels, !configChannels.isEmpty {
-                return configChannels.filter { active.contains($0) }
+                return deduped(configChannels.filter { seen.contains($0) })
             }
             return active
         }
 
         // Backend channels not available yet — use merchant config, then all channels.
         if let configChannels = configChannels, !configChannels.isEmpty {
-            return configChannels
+            return deduped(configChannels)
         }
         return PaymentChannel.allCases
+    }
+
+    private static func deduped(_ channels: [PaymentChannel]) -> [PaymentChannel] {
+        var seen = Set<PaymentChannel>()
+        return channels.filter { seen.insert($0).inserted }
     }
 
     /// Resolve which channel should be pre-selected when the widget loads.

@@ -390,7 +390,7 @@ public final class PaymentViewController: UIViewController {
             merchantRef: config.transactionRef ?? DeviceFingerprint.generate(),
             amount: config.amount,
             currency: config.currency.rawValue,
-            paymentChannelCode: config.defaultChannel.rawValue.uppercased(),
+            paymentChannelCode: (config.defaultChannel ?? config.paymentChannels.first ?? .card).rawValue.uppercased(),
             chargeAllocation: config.chargeAllocation.rawValue,
             narration: config.narration,
             customerDetails: config.buildCustomerDetails(),

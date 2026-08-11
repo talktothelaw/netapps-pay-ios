@@ -91,8 +91,12 @@ final class ChannelTabsView: UIView {
     // MARK: - Configure
     
     func configure(channels: [PaymentChannel], selected: PaymentChannel? = nil, store: PaymentStore? = nil) {
-        // Sort: card first, then rest
-        self.channels = channels.sorted { a, _ in a == .card }
+        // Merchant order (the order channels were added to their profile), never
+        // re-sorted card-first. De-duped so one tab is rendered per channel —
+        // `tabButtons` is keyed by channel, so a repeated channel would leave
+        // orphan buttons that can never show as selected.
+        var seen = Set<PaymentChannel>()
+        self.channels = channels.filter { seen.insert($0).inserted }
         self.selectedChannel = selected
         self.store = store
         

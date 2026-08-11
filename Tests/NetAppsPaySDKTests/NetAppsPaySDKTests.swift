@@ -270,8 +270,31 @@ final class NetAppsPaySDKTests: XCTestCase {
     
     // MARK: - PaymentSDK Tests
     
-    func testPaymentSDKVersion() {
-        XCTAssertEqual(PaymentSDK.version, "1.0.0")
+    // `PaymentSDK.version` and the podspec's `s.version` are two hand-maintained
+    // copies of the same number, and CocoaPods resolves `s.source` by the git tag
+    // of that version. Asserting a hardcoded literal here just goes stale on every
+    // release (it sat at "1.0.0" while the SDK shipped 1.0.7); compare the two
+    // sources instead. CI additionally checks the git tag against both.
+    func testPaymentSDKVersionMatchesPodspec() throws {
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let podspecURL = repoRoot.appendingPathComponent("NetAppsPaySDK.podspec")
+        let podspec = try String(contentsOf: podspecURL, encoding: .utf8)
+
+        let pattern = #"s\.version\s*=\s*"([^"]+)""#
+        let range = NSRange(podspec.startIndex..., in: podspec)
+        let match = try XCTUnwrap(
+            NSRegularExpression(pattern: pattern).firstMatch(in: podspec, range: range),
+            "Could not find s.version in \(podspecURL.path)"
+        )
+        let podspecVersion = String(podspec[Range(match.range(at: 1), in: podspec)!])
+
+        XCTAssertEqual(
+            PaymentSDK.version, podspecVersion,
+            "PaymentSDK.version must match NetAppsPaySDK.podspec s.version"
+        )
     }
     
     func testPaymentSDKDebugMode() {
