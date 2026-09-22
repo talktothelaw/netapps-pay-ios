@@ -20,11 +20,38 @@
 # native dependency cannot resolve.
 
 stages:
+  - validate
   - mirror
+
+validate:
+  stage: validate
+  tags:
+    - macos
+  script:
+    - xcodebuild -version
+    - xcodebuild -scheme NetAppsPaySDK -destination 'generic/platform=iOS' build
+    - |
+      SIM=$(xcrun simctl list devices available --json \
+        | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next((x['udid'] for k,v in d.items() if 'iOS' in k for x in v), ''))")
+      if [ -z "$SIM" ]; then
+        echo "No iOS simulator on this runner - build verified, tests skipped."
+        exit 0
+      fi
+      xcodebuild test -scheme NetAppsPaySDK -destination "id=$SIM"
+  rules:
+    - if: '$IOS_VALIDATE_ENABLED != "true"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH'
+  timeout: 30 minutes
 
 mirror_to_talktothelaw:
   stage: mirror
   image: alpine:latest
+  needs:
+    - job: validate
+      optional: true
   variables:
     GIT_STRATEGY: clone
     GIT_DEPTH: 0
