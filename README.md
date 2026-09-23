@@ -20,6 +20,7 @@ dependencies: [
 ]
 ```
 
+
 **Requirements**: iOS 13+ &nbsp;|&nbsp; Swift 5.9+ &nbsp;|&nbsp; No external dependencies
 
 ## Quick Start
