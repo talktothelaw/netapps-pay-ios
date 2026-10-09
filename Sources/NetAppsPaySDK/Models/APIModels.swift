@@ -544,6 +544,7 @@ struct ProcessSavedCardRequest: Encodable {
 struct InitiateNetAppsMarketplaceRequest: Encodable {
     let beneficiary: String
     let metadata: [String: AnyCodable]?
+    let mToken: String?
 }
 
 struct InitiateNetAppsMarketplaceResponse: Decodable {

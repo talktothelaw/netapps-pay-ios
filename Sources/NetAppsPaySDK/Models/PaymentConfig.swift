@@ -123,7 +123,8 @@ public struct PaymentConfig {
     public var transactionRef: String?
     public var productName: String?
     public var cardHolderName: String?
-    
+    public var mToken: String?
+
     // Customer details (optional – defaults applied)
     public var customerId: String?
     public var postalCode: String?

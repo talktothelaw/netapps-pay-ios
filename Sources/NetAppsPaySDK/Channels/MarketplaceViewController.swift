@@ -271,7 +271,8 @@ final class MarketplaceViewController: UIViewController {
         
         let request = InitiateNetAppsMarketplaceRequest(
             beneficiary: config.email,
-            metadata: nil
+            metadata: nil,
+            mToken: config.mToken
         )
         
         api.initiateNetAppsMarketplace(transactionId: transactionId, request: request) { [weak self] result in
